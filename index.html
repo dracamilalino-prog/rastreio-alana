@@ -607,8 +607,9 @@ function renderScale(id, qs, key, max) {
 
 function setScale(key, i, v) {
   state[key][i] = v;
-  renderScale(key==='int'?'int-qs':key==='soc'?'soc-qs':key==='emo'?'emo-qs':'rot-qs',
-    key==='int'?intQs:key==='soc'?socQs:key==='emo'?emoQs:rotQs, key, 4);
+  const idMap = { int:'int-qs', soc:'soc-qs', emo:'emo-qs', rot:'rot-qs', aq:'aq-qs', wais:'wais-qs', bpd:'bpd-qs', bna:'bna-qs' };
+  const qMap  = { int:intQs, soc:socQs, emo:emoQs, rot:rotQs, aq:aqQs, wais:waisQs, bpd:bpdQs, bna:bnaQs };
+  renderScale(idMap[key], qMap[key], key, 4);
   updateProg();
 }
 
