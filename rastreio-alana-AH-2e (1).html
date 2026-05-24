@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Questionário — Alana Guimarães Gregorut</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #f7f4ef;
+    --card: #ffffff;
+    --ink: #1c1b1f;
+    --mid: #5a5560;
+    --light: #e8e4dd;
+    --accent: #3d6b84;
+    --accent2: #8b5e52;
+    --border: #ddd8d0;
+    --warm: #f2ede5;
+    --ok: #4a7c59;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Lato', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.7;
+  }
+
+  /* COVER */
+  .cover {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #1c1b1f;
+    padding: 2.5rem 1.5rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 60% 50% at 20% 30%, rgba(61,107,132,0.25) 0%, transparent 70%),
+      radial-gradient(ellipse 50% 40% at 80% 70%, rgba(139,94,82,0.2) 0%, transparent 70%);
+  }
+  .cover-inner { position: relative; z-index: 2; max-width: 540px; }
+  .cover-tag {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
+    margin-bottom: 2rem;
+  }
+  .cover h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 6vw, 3.2rem);
+    font-weight: 400;
+    color: white;
+    line-height: 1.2;
+    margin-bottom: 1rem;
+  }
+  .cover h1 em { font-style: italic; color: #a8c4d4; }
+  .cover p {
+    color: rgba(255,255,255,0.5);
+    font-size: 14px;
+    line-height: 1.8;
+    margin-bottom: 2.5rem;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .btn-start {
+    background: var(--accent);
+    color: white;
+    border: none;
+    padding: 14px 44px;
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: background 0.2s;
+  }
+  .btn-start:hover { background: #2d5268; }
+  .cover-note {
+    margin-top: 2rem;
+    font-size: 11px;
+    color: rgba(255,255,255,0.25);
+    max-width: 380px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* QUIZ */
+  .quiz-wrap { display: none; max-width: 740px; margin: 0 auto; padding: 2rem 1.5rem 5rem; }
+
+  .prog-wrap { position: sticky; top: 0; z-index: 20; height: 4px; background: var(--light); }
+  .prog-bar { height: 4px; background: var(--accent); width: 0%; transition: width 0.3s; }
+
+  .quiz-head { padding: 2.5rem 0 1.5rem; border-bottom: 1px solid var(--border); margin-bottom: 2rem; }
+  .quiz-head h2 { font-family: 'Playfair Display', serif; font-size: 1.8rem; font-weight: 400; }
+  .quiz-head p { color: var(--mid); font-size: 13px; margin-top: 6px; }
+
+  .block {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin-bottom: 1.8rem;
+    overflow: hidden;
+  }
+  .block-head {
+    background: var(--ink);
+    color: white;
+    padding: 13px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .block-num { font-family: 'Playfair Display', serif; font-style: italic; font-size: 1.2rem; opacity: 0.5; }
+  .block-title { font-size: 12px; letter-spacing: 2px; text-transform: uppercase; font-weight: 700; }
+  .block-sub { font-size: 11px; opacity: 0.4; margin-left: auto; }
+  .block-body { padding: 20px; }
+
+  .legend {
+    background: var(--warm);
+    border-radius: 4px;
+    padding: 9px 14px;
+    font-size: 12px;
+    color: var(--mid);
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+
+  .q { padding: 13px 0; border-bottom: 1px solid #f5f0ea; }
+  .q:last-child { border-bottom: none; }
+  .q-text { font-size: 14px; color: #2a2630; margin-bottom: 10px; }
+  .q-hint { font-size: 12px; color: #999; margin-bottom: 10px; font-style: italic; }
+
+  .opts { display: flex; gap: 7px; flex-wrap: wrap; }
+
+  .opt {
+    border: 1.5px solid var(--border);
+    background: white;
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-family: 'Lato', sans-serif;
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .opt:hover { border-color: var(--accent); background: #eef4f8; }
+  .opt.sel { border-color: var(--accent); background: var(--accent); color: white; }
+
+  .num-opts { display: flex; gap: 8px; flex-wrap: wrap; }
+  .num-opt {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    background: white;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .num-opt:hover { border-color: var(--accent); background: #eef4f8; }
+  .num-opt.sel { border-color: var(--accent); background: var(--accent); color: white; }
+
+  .textarea-q {
+    width: 100%;
+    border: 1.5px solid var(--border);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    resize: vertical;
+    min-height: 80px;
+    color: var(--ink);
+    background: white;
+    transition: border 0.15s;
+  }
+  .textarea-q:focus { outline: none; border-color: var(--accent); }
+
+  .submit-area { text-align: center; margin-top: 2rem; }
+  .btn-submit {
+    background: var(--ink);
+    color: white;
+    border: none;
+    padding: 15px 52px;
+    font-family: 'Lato', sans-serif;
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: background 0.2s;
+  }
+  .btn-submit:hover { background: var(--accent); }
+
+  /* TELA DE AGRADECIMENTO (para a paciente) */
+  .thanks-wrap {
+    display: none;
+    min-height: 100vh;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    background: #1c1b1f;
+    text-align: center;
+    padding: 3rem 1.5rem;
+  }
+  .thanks-icon { font-size: 3rem; margin-bottom: 1.5rem; }
+  .thanks-wrap h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    color: white;
+    font-weight: 400;
+    margin-bottom: 1rem;
+  }
+  .thanks-wrap p { color: rgba(255,255,255,0.5); font-size: 14px; line-height: 1.9; max-width: 400px; }
+
+  @media (max-width: 480px) {
+    .num-opt { width: 38px; height: 38px; font-size: 13px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- COVER -->
+<div class="cover" id="cover">
+  <div class="cover-inner">
+    <div class="cover-tag">Questionário Clínico · Uso Confidencial</div>
+    <h1>Olá, Alana.<br><em>Vamos conversar?</em></h1>
+    <p>Sua médica preparou este questionário especialmente para você. Não há respostas certas ou erradas — queremos entender como você pensa, sente e vive no dia a dia.<br><br>Leva em torno de 15 minutos. Responda com calma, do jeito que quiser.</p>
+    <button class="btn-start" onclick="showQuiz()">Começar</button>
+    <div class="cover-note">Suas respostas são confidenciais e serão usadas exclusivamente pela Dra. Camila Lino.</div>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div class="quiz-wrap" id="quiz">
+  <div class="prog-wrap"><div class="prog-bar" id="progBar"></div></div>
+
+  <div class="quiz-head">
+    <h2>Questionário de Autoconhecimento</h2>
+    <p>Responda com base em como você <strong>realmente é</strong> — não como você gostaria de ser ou como as pessoas te veem.</p>
+  </div>
+
+  <!-- 1. Cognição e Aprendizagem -->
+  <div class="block">
+    <div class="block-head">
+      <span class="block-num">01</span>
+      <span class="block-title">Como você aprende e pensa</span>
+      <span class="block-sub">7 perguntas</span>
+    </div>
+    <div class="block-body">
+      <div class="legend">Escolha a opção que melhor descreve você — não o que seria "ideal", mas o que é real.</div>
+      <div id="cog-qs"></div>
+    </div>
+  </div>
+
+  <!-- 2. Intensidade e Sensibilidade -->
+  <div class="block">
+    <div class="block-head">
+      <span class="block-num">02</span>
+      <span class="block-title">Intensidade e sensibilidade</span>
+      <span class="block-sub">8 perguntas</span>
+    </div>
+    <div class="block-body">
+      <div class="legend">Quanto cada afirmação se aplica a você? <strong>0</strong> = nada · <strong>1</strong> = às vezes · <strong>2</strong> = frequente · <strong>3</strong> = muito / sempre</div>
+      <div id="int-qs"></div>
+    </div>
+  </div>
+
+  <!-- 3. Social e Mascaramento -->
+  <div class="block">
+    <div class="block-head">
+      <span class="block-num">03</span>
+      <span class="block-title">Vida social e mascaramento</span>
+      <span class="block-sub">8 perguntas</span>
+    </div>
+    <div class="block-body">
+      <div class="legend"><strong>0</strong> = não se aplica · <strong>1</strong> = às vezes · <strong>2</strong> = frequente · <strong>3</strong> = muito / sempre</div>
+      <div id="soc-qs"></div>
+    </div>
+  </div>
+
+  <!-- 4. Regulação emocional e identidade -->
+  <div class="block">
+    <div class="block-head">
+      <span class="block-num">04</span>
+      <span class="block-title">Emoções e identidade</span>
+      <span class="block-sub">8 perguntas</span>
+    </div>
+    <div class="block-body">
+      <div class="legend"><strong>0</strong> = não se aplica · <strong>1</strong> = às vezes · <strong>2</strong> = frequente · <strong>3</strong> = muito / sempre</div>
+      <div id="emo-qs"></div>
+    </div>
+  </div>
+
+  <!-- 5. Rotina, sensorialidade e funcionamento -->
+  <div class="block">
+    <div class="block-head">
+      <span class="block-num">05</span>
+      <span class="block-title">Rotina, corpo e funcionamento</span>
+      <span class="block-sub">7 perguntas</span>
+    </div>
+    <div class="block-body">
+      <div class="legend"><strong>0</strong> = não se aplica · <strong>1</strong> = às vezes · <strong>2</strong> = frequente · <strong>3</strong> = muito / sempre</div>
+      <div id="rot-qs"></div>
+    </div>
+  </div>
+
+  <!-- 6. Burnout e sobrecarga -->
+  <div class="block">
+    <div class="block-head">
+      <span class="block-num">06</span>
+      <span class="block-title">Burnout e esgotamento</span>
+      <span class="block-sub">6 perguntas</span>
+    </div>
+    <div class="block-body">
+      <div class="legend">Como você está se sentindo <strong>agora</strong>, nas últimas semanas.</div>
+      <div id="burn-qs"></div>
+    </div>
+  </div>
+
+  <!-- 7. Perguntas abertas -->
+  <div class="block">
+    <div class="block-head">
+      <span class="block-num">07</span>
+      <span class="block-title">Com suas próprias palavras</span>
+      <span class="block-sub">4 perguntas</span>
+    </div>
+    <div class="block-body">
+      <div id="open-qs"></div>
+    </div>
+  </div>
+
+  <div class="submit-area">
+    <button class="btn-submit" onclick="submitQuiz()">Enviar para a Dra. Camila</button>
+  </div>
+</div>
+
+<!-- TELA DE AGRADECIMENTO (paciente vê isso) -->
+<div class="thanks-wrap" id="thanks">
+  <div class="thanks-icon">💌</div>
+  <h2>Obrigada, Alana.</h2>
+  <p>Suas respostas foram enviadas com sucesso para a Dra. Camila.<br><br>Um arquivo foi salvo no seu dispositivo — se quiser, você pode mandá-lo pelo WhatsApp como reforço. Mas não é obrigatório, já chegou por aqui! 🌿<br><br>Você pode fechar esta janela agora.</p>
+</div>
+
+<script>
+// ── DADOS ──────────────────────────────────────────────────────────────────
+
+const cogQs = [
+  { q: "Você aprende coisas novas muito mais rápido do que a maioria das pessoas ao redor?", type:'yn' },
+  { q: "Quando algo te interessa, você vai fundo — pesquisa horas, quer saber tudo sobre o assunto?", type:'yn' },
+  { q: "Você costuma enxergar conexões entre coisas que parecem completamente diferentes para os outros?", type:'yn' },
+  { q: "Se sente entediada com facilidade em atividades repetitivas ou que parecem abaixo do seu nível?", type:'yn' },
+  { q: "Você questiona regras ou autoridades quando elas não fazem sentido para você?", type:'yn' },
+  { q: "Você pensa de forma não-linear — vai de A para G sem passar por B, C, D?", type:'yn' },
+  { q: "Como você descreveria sua memória para assuntos que te interessam?", type:'single', opts:["Comum / igual à maioria", "Um pouco acima da média", "Muito boa / detalhada", "Fotográfica / enciclopédica"] },
+];
+
+const intQs = [
+  "Me afeto intensamente com injustiças, mesmo quando não me envolvem diretamente.",
+  "Músicas, filmes ou livros me movem de forma muito mais profunda do que parecem mover os outros.",
+  "Sinto as emoções dos outros como se fossem minhas (empatia intensa).",
+  "Tenho reações físicas a estímulos sensoriais que outros mal percebem (barulho, textura, cheiro, luz).",
+  "Minha intensidade emocional já me causou problemas relacionais ou profissionais.",
+  "Me considero mais sensível do que a maioria das pessoas.",
+  "Tenho pensamentos que não consigo parar — eles ficam girando mesmo quando não quero.",
+  "Me sinto sobrecarregada por muito estímulo ao mesmo tempo (ambiente barulhento, conversas simultâneas, etc.).",
+];
+
+const socQs = [
+  "Preciso de um tempo considerável sozinha para recuperar energia depois de interações sociais.",
+  "Fico esgotada após ambientes com muita gente, mesmo que sejam situações agradáveis.",
+  "Aprendo regras sociais de forma consciente, como se fossem um 'script' — não de forma natural.",
+  "Finjo estar bem ou ser diferente do que sou para me encaixar socialmente.",
+  "Me sinto uma 'atriz' em situações sociais — como se estivesse performando um personagem.",
+  "Prefiro interações com uma pessoa por vez a grupos.",
+  "Tenho poucos relacionamentos próximos, mas com profundidade muito grande.",
+  "Me sinto diferente das pessoas da minha idade — como se não pertencesse.",
+];
+
+const emoQs = [
+  "Tenho dificuldade em saber quem eu sou quando tiro a 'máscara' que mostro para os outros.",
+  "Meu humor pode mudar muito rápido, dependendo do que acontece ao redor.",
+  "Sinto um vazio interno que é difícil de explicar ou preencher.",
+  "Tenho medo intenso de ser abandonada ou rejeitada.",
+  "Quando me decepciono com alguém, essa decepção é muito intensa — como se o mundo desabasse.",
+  "Tenho dificuldade em regular minhas emoções — elas parecem maiores do que eu consigo lidar.",
+  "Me machuco ou já me machuquei como forma de lidar com sentimentos muito intensos.",
+  "Já tive pensamentos de que seria melhor não estar aqui.",
+];
+
+const rotQs = [
+  "Mudanças inesperadas na rotina me causam angústia desproporcional.",
+  "Tenho rituais ou sequências que preciso seguir para me sentir bem.",
+  "Tenho dificuldade com certas texturas, sabores ou cheiros de alimentos — isso limita o que consigo comer.",
+  "Tenho movimentos ou comportamentos repetitivos que me acalmam (balançar, bater os dedos, morder objetos, etc.).",
+  "Meu corpo carrega a tensão emocional — sinto fisicamente quando estou sobrecarregada.",
+  "Tenho dificuldade de descartar objetos, mesmo quando não têm uso prático.",
+  "Meu sono é irregular ou problemático — difícil adormecer, acordar cedo demais, ou dormir demais.",
+];
+
+const burnQs = [
+  { q: "Como está seu nível de energia atualmente?", type:'single', opts:["Normal / OK", "Um pouco abaixo", "Muito baixo", "Praticamente zerado"] },
+  { q: "Você consegue fazer as coisas que precisa no dia a dia?", type:'single', opts:["Sim, normalmente", "Com esforço extra", "Só o mínimo", "Mal consigo sair da cama"] },
+  { q: "Você sente que chegou no limite — que não consegue mais 'se segurar'?", type:'yn' },
+  { q: "Você sente que a máscara social que usa no dia a dia está pesada demais?", type:'yn' },
+  { q: "Quando foi a última vez que você se sentiu verdadeiramente bem e descansada?", type:'single', opts:["Essa semana", "Esse mês", "Há alguns meses", "Não consigo lembrar"] },
+  { q: "O que melhor descreve como você está agora?", type:'single', opts:["Estável", "Oscilando mas funcionando", "No limite", "Em crise"] },
+];
+
+const openQs = [
+  { q: "O que te trouxe à consulta agora? O que mudou ou piorou ultimamente?", hint: "Pode ser qualquer coisa — um evento, uma sensação, algo que percebeu." },
+  { q: "Há algo em você que as pessoas raramente entendem ou que você raramente consegue explicar?", hint: "Pode ser sobre como você pensa, sente ou vive." },
+  { q: "Como é para você 'desligar' — conseguir realmente descansar?", hint: "O que ajuda? O que atrapalha?" },
+  { q: "O que gostaria que a Dra. Camila soubesse sobre você que ainda não foi dito?", hint: "Qualquer coisa que pareça importante." },
+];
+
+// ── STATE ──────────────────────────────────────────────────────────────────
+let state = {
+  cog: {},    // by index
+  int: Array(8).fill(null),
+  soc: Array(8).fill(null),
+  emo: Array(8).fill(null),
+  rot: Array(7).fill(null),
+  burn: {},
+  open: Array(4).fill(""),
+};
+
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function showQuiz() {
+  document.getElementById('cover').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  renderAll();
+}
+
+function renderAll() {
+  renderCog(); renderScale('int-qs', intQs, 'int', 4);
+  renderScale('soc-qs', socQs, 'soc', 4);
+  renderScale('emo-qs', emoQs, 'emo', 4);
+  renderScale('rot-qs', rotQs, 'rot', 4);
+  renderBurn(); renderOpen();
+  updateProg();
+}
+
+function renderCog() {
+  const c = document.getElementById('cog-qs');
+  c.innerHTML = '';
+  cogQs.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'q';
+    let inner = `<div class="q-text">${i+1}. ${item.q}</div>`;
+    if (item.type === 'yn') {
+      inner += `<div class="opts">` +
+        ['Sim','Não'].map(v => `<button class="opt ${state.cog[i]===v?'sel':''}" onclick="setCog(${i},'${v}')">${v}</button>`).join('') +
+        `</div>`;
+    } else {
+      inner += `<div class="opts">` +
+        item.opts.map(v => `<button class="opt ${state.cog[i]===v?'sel':''}" onclick="setCog(${i},'${encodeURIComponent(v)}')" data-raw="${v}">${v}</button>`).join('') +
+        `</div>`;
+    }
+    div.innerHTML = inner;
+    c.appendChild(div);
+  });
+}
+
+function setCog(i, v) {
+  state.cog[i] = decodeURIComponent(v);
+  renderCog(); updateProg();
+}
+
+function renderScale(id, qs, key, max) {
+  const c = document.getElementById(id);
+  c.innerHTML = '';
+  qs.forEach((q, i) => {
+    const div = document.createElement('div');
+    div.className = 'q';
+    const nums = Array.from({length: max}, (_,v) =>
+      `<button class="num-opt ${state[key][i]===v?'sel':''}" onclick="setScale('${key}',${i},${v})">${v}</button>`
+    ).join('');
+    div.innerHTML = `<div class="q-text">${i+1}. ${q}</div><div class="num-opts">${nums}</div>`;
+    c.appendChild(div);
+  });
+}
+
+function setScale(key, i, v) {
+  state[key][i] = v;
+  renderScale(key==='int'?'int-qs':key==='soc'?'soc-qs':key==='emo'?'emo-qs':'rot-qs',
+    key==='int'?intQs:key==='soc'?socQs:key==='emo'?emoQs:rotQs, key, 4);
+  updateProg();
+}
+
+function renderBurn() {
+  const c = document.getElementById('burn-qs');
+  c.innerHTML = '';
+  burnQs.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'q';
+    let inner = `<div class="q-text">${i+1}. ${item.q}</div>`;
+    if (item.type === 'yn') {
+      inner += `<div class="opts">` +
+        ['Sim','Não'].map(v => `<button class="opt ${state.burn[i]===v?'sel':''}" onclick="setBurn(${i},'${v}')">${v}</button>`).join('') +
+        `</div>`;
+    } else {
+      inner += `<div class="opts">` +
+        item.opts.map(v => `<button class="opt ${state.burn[i]===v?'sel':''}" onclick="setBurn(${i},'${encodeURIComponent(v)}')" >${v}</button>`).join('') +
+        `</div>`;
+    }
+    div.innerHTML = inner;
+    c.appendChild(div);
+  });
+}
+
+function setBurn(i, v) {
+  state.burn[i] = decodeURIComponent(v);
+  renderBurn(); updateProg();
+}
+
+function renderOpen() {
+  const c = document.getElementById('open-qs');
+  c.innerHTML = '';
+  openQs.forEach((item, i) => {
+    const div = document.createElement('div');
+    div.className = 'q';
+    div.innerHTML = `<div class="q-text">${i+1}. ${item.q}</div>
+      <div class="q-hint">${item.hint}</div>
+      <textarea class="textarea-q" placeholder="Escreva aqui..." oninput="state.open[${i}]=this.value">${state.open[i]}</textarea>`;
+    c.appendChild(div);
+  });
+}
+
+function updateProg() {
+  const total = 7 + 8 + 8 + 8 + 7 + 4;
+  let ans = 0;
+  ans += Object.keys(state.cog).length;
+  ans += state.int.filter(v=>v!==null).length;
+  ans += state.soc.filter(v=>v!==null).length;
+  ans += state.emo.filter(v=>v!==null).length;
+  ans += state.rot.filter(v=>v!==null).length;
+  ans += Object.keys(state.burn).length;
+  document.getElementById('progBar').style.width = Math.min(100, Math.round(ans/total*100)) + '%';
+}
+
+// ── APPS SCRIPT URL ─────────────────────────────────────────────────────────
+const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbztlA8Eu7Lelx3p5k4qX-gayoJ5O-PondWXtRmPTatMbdk6ZEBxxWZkPOb6huxPEqEK/exec';
+
+// ── SUBMIT ─────────────────────────────────────────────────────────────────
+async function submitQuiz() {
+  const btn = document.querySelector('.btn-submit');
+  btn.textContent = '⏳ Enviando...';
+  btn.disabled = true;
+
+  const dataStr = new Date().toLocaleDateString('pt-BR', {day:'2-digit', month:'long', year:'numeric', hour:'2-digit', minute:'2-digit'});
+
+  // Monta payload com todos os dados
+  const payload = {
+    data: dataStr,
+    intScore: sum(state.int),
+    socScore: sum(state.soc),
+    emoScore: sum(state.emo),
+    rotScore: sum(state.rot),
+    // cognição
+    cog0: state.cog[0]||'—', cog1: state.cog[1]||'—', cog2: state.cog[2]||'—',
+    cog3: state.cog[3]||'—', cog4: state.cog[4]||'—', cog5: state.cog[5]||'—',
+    cog6: state.cog[6]||'—',
+    // intensidade
+    int0: state.int[0], int1: state.int[1], int2: state.int[2], int3: state.int[3],
+    int4: state.int[4], int5: state.int[5], int6: state.int[6], int7: state.int[7],
+    // social
+    soc0: state.soc[0], soc1: state.soc[1], soc2: state.soc[2], soc3: state.soc[3],
+    soc4: state.soc[4], soc5: state.soc[5], soc6: state.soc[6], soc7: state.soc[7],
+    // emoções
+    emo0: state.emo[0], emo1: state.emo[1], emo2: state.emo[2], emo3: state.emo[3],
+    emo4: state.emo[4], emo5: state.emo[5], emo6: state.emo[6], emo7: state.emo[7],
+    // rotina
+    rot0: state.rot[0], rot1: state.rot[1], rot2: state.rot[2], rot3: state.rot[3],
+    rot4: state.rot[4], rot5: state.rot[5], rot6: state.rot[6],
+    // burnout
+    burn0: state.burn[0]||'—', burn1: state.burn[1]||'—', burn2: state.burn[2]||'—',
+    burn3: state.burn[3]||'—', burn4: state.burn[4]||'—', burn5: state.burn[5]||'—',
+    // abertas
+    open0: state.open[0]||'Não respondida.',
+    open1: state.open[1]||'Não respondida.',
+    open2: state.open[2]||'Não respondida.',
+    open3: state.open[3]||'Não respondida.',
+  };
+
+  try {
+    await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      mode: 'no-cors',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+  } catch(err) {
+    console.error('Erro ao enviar:', err);
+  }
+
+  // Mostra agradecimento — paciente não vê nada do processo
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('thanks').style.display = 'flex';
+}
+
+// ── PDF GERAÇÃO (invisível para a paciente) ─────────────────────────────────
+function sum(arr) { return arr.reduce((a,b) => a + (b||0), 0); }
+
+function gerarPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const W = 210, margin = 16, cW = W - margin*2;
+  let y = 0;
+
+  const ink     = [28, 27, 31];
+  const accent  = [61, 107, 132];
+  const accent2 = [139, 94, 82];
+  const mist    = [232, 228, 221];
+  const warm    = [242, 237, 229];
+  const white   = [255, 255, 255];
+  const ok      = [74, 124, 89];
+  const warn    = [180, 100, 40];
+  const danger  = [160, 40, 40];
+  const mid     = [90, 85, 96];
+
+  function newPage() { doc.addPage(); y = 16; }
+  function chk(n) { if (y + n > 278) newPage(); }
+
+  // ── HEADER ──────────────────────────────────────────────────────────────
+  doc.setFillColor(...ink);
+  doc.rect(0, 0, W, 44, 'F');
+
+  // accent stripe
+  doc.setFillColor(...accent);
+  doc.rect(0, 41, W, 3, 'F');
+
+  doc.setTextColor(255,255,255);
+  doc.setFontSize(9); doc.setFont('helvetica','normal');
+  doc.text('RASTREIO CLÍNICO ESPECIALIZADO', margin, 12);
+  doc.text('ALTAS HABILIDADES · DUPLA/TRIPLA EXCEPCIONALIDADE · TEA FEMININO', margin, 18);
+
+  doc.setFontSize(20); doc.setFont('helvetica','bold');
+  doc.text('ALANA GUIMARÃES GREGORUT', margin, 30);
+
+  doc.setFontSize(8); doc.setFont('helvetica','normal');
+  doc.setTextColor(160, 180, 200);
+  const now = new Date().toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric',hour:'2-digit',minute:'2-digit'});
+  doc.text(`28 anos · 11/08/1997 · Gerado em ${now}`, margin, 37);
+  doc.text('Dra. Camila Lino · CRM 274280 SP · Psiquiatria · USO CLÍNICO CONFIDENCIAL', W-margin, 37, {align:'right'});
+
+  y = 54;
+
+  // ── ALERTAS PRIORITÁRIOS ────────────────────────────────────────────────
+  const emoFlag8 = state.emo[7] !== null && state.emo[7] > 0;
+  const emoFlag7 = state.emo[6] !== null && state.emo[6] > 0;
+  const burnCrise = state.burn[5] === 'Em crise';
+
+  if (emoFlag8 || emoFlag7 || burnCrise) {
+    chk(20);
+    doc.setFillColor(252, 228, 228);
+    doc.roundedRect(margin, y, cW, emoFlag8 && emoFlag7 ? 20 : 14, 2, 2, 'F');
+    doc.setDrawColor(180,40,40); doc.roundedRect(margin, y, cW, emoFlag8 && emoFlag7 ? 20 : 14, 2, 2, 'S');
+    doc.setFillColor(...danger); doc.rect(margin, y, 3, emoFlag8 && emoFlag7 ? 20 : 14, 'F');
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...danger);
+    doc.text('🚨 ALERTA DE RISCO', margin+6, y+6);
+    doc.setFont('helvetica','normal'); doc.setTextColor(100,20,20);
+    let alertY = y+11;
+    if (emoFlag8) { doc.text('· Ideação suicida pontuada nesta sessão — avaliar imediatamente.', margin+6, alertY); alertY += 5; }
+    if (emoFlag7) { doc.text('· Automutilação pontuada — investigar frequência, contexto e função.', margin+6, alertY); alertY += 5; }
+    if (burnCrise) { doc.text('· Paciente relata estar "em crise" atualmente.', margin+6, alertY); }
+    y += (emoFlag8 && emoFlag7 ? 20 : 14) + 6;
+  }
+
+  // ── SCORES POR DOMÍNIO ──────────────────────────────────────────────────
+  chk(10);
+  doc.setFillColor(...ink);
+  doc.rect(margin, y, cW, 8, 'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...white);
+  doc.text('ESCORES POR DOMÍNIO', margin+4, y+5.5);
+  y += 12;
+
+  const intScore  = sum(state.int);
+  const socScore  = sum(state.soc);
+  const emoScore  = sum(state.emo);
+  const rotScore  = sum(state.rot);
+  const maxInt = 24, maxSoc = 24, maxEmo = 24, maxRot = 21;
+
+  function domainBar(label, score, max, desc) {
+    chk(22);
+    const pct = score/max;
+    const col = pct < 0.33 ? [74,124,89] : pct < 0.66 ? [200,140,40] : [160,60,60];
+    doc.setFillColor(255,255,255);
+    doc.roundedRect(margin, y, cW, 20, 2, 2, 'F');
+    doc.setDrawColor(...mist); doc.roundedRect(margin, y, cW, 20, 2, 2, 'S');
+
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...ink);
+    doc.text(label, margin+4, y+7);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...mid);
+    doc.text(desc, margin+4, y+13);
+
+    // bar
+    const bX = margin+4, bY = y+15, bW = cW-50, bH = 3;
+    doc.setFillColor(...mist); doc.roundedRect(bX, bY, bW, bH, 1,1,'F');
+    doc.setFillColor(...col); doc.roundedRect(bX, bY, Math.max(2, pct*bW), bH, 1,1,'F');
+
+    // score
+    doc.setFontSize(14); doc.setFont('helvetica','bold'); doc.setTextColor(...ink);
+    doc.text(`${score}`, W-margin-10, y+10, {align:'right'});
+    doc.setFontSize(8); doc.setFont('helvetica','normal'); doc.setTextColor(...mid);
+    doc.text(`/${max}`, W-margin-10, y+16, {align:'right'});
+
+    y += 24;
+  }
+
+  domainBar('INTENSIDADE E SENSIBILIDADE', intScore, maxInt,
+    'Sobrecarga sensorial, empatia intensa, pensamentos intrusivos, intensidade emocional. Altamente elevado em AH/SD e TEA feminino.');
+  domainBar('VIDA SOCIAL E MASCARAMENTO', socScore, maxSoc,
+    'Esgotamento social, aprendizado consciente de regras, performance de personagem, sentimento de não pertencimento.');
+  domainBar('EMOÇÕES E IDENTIDADE', emoScore, maxEmo,
+    'Regulação emocional, difusão de identidade, medo de abandono, automutilação, ideação. Diferencial TPB × TEA × Trauma.');
+  domainBar('ROTINA, SENSORIALIDADE E CORPO', rotScore, maxRot,
+    'Rigidez de rotina, rituais, restrição alimentar, BFRBs, tensão somática. Domínio central do TEA feminino mascarado.');
+
+  // ── COGNIÇÃO ────────────────────────────────────────────────────────────
+  chk(14);
+  doc.setFillColor(...ink);
+  doc.rect(margin, y, cW, 8, 'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...white);
+  doc.text('COGNIÇÃO E APRENDIZAGEM', margin+4, y+5.5);
+  y += 12;
+
+  chk(50);
+  doc.setFillColor(255,255,255);
+  doc.roundedRect(margin, y, cW, 46, 2, 2, 'F');
+  doc.setDrawColor(...mist); doc.roundedRect(margin, y, cW, 46, 2, 2, 'S');
+
+  cogQs.forEach((item, i) => {
+    const resp = state.cog[i] || '—';
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(...ink);
+    const qLines = doc.splitTextToSize(`${i+1}. ${item.q}`, cW - 50);
+    doc.text(qLines, margin+4, y + 6 + i*6.5);
+    doc.setFont('helvetica','normal'); doc.setTextColor(...accent);
+    doc.text(resp, W-margin-4, y + 6 + i*6.5, {align:'right'});
+  });
+  y += 50;
+
+  // ── BURNOUT ─────────────────────────────────────────────────────────────
+  chk(14);
+  doc.setFillColor(...ink);
+  doc.rect(margin, y, cW, 8, 'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...white);
+  doc.text('BURNOUT E ESTADO ATUAL', margin+4, y+5.5);
+  y += 12;
+
+  chk(46);
+  doc.setFillColor(255,255,255);
+  doc.roundedRect(margin, y, cW, 44, 2, 2, 'F');
+  doc.setDrawColor(...mist); doc.roundedRect(margin, y, cW, 44, 2, 2, 'S');
+
+  burnQs.forEach((item, i) => {
+    const resp = state.burn[i] || '—';
+    doc.setFontSize(7.5); doc.setFont('helvetica','bold'); doc.setTextColor(...ink);
+    const qLines = doc.splitTextToSize(`${i+1}. ${item.q}`, cW - 50);
+    doc.text(qLines, margin+4, y + 6 + i*7);
+    doc.setFont('helvetica','normal'); doc.setTextColor(...accent2);
+    doc.text(resp, W-margin-4, y + 6 + i*7, {align:'right'});
+  });
+  y += 48;
+
+  // ── RESPOSTAS ABERTAS ───────────────────────────────────────────────────
+  chk(14);
+  doc.setFillColor(...ink);
+  doc.rect(margin, y, cW, 8, 'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...white);
+  doc.text('RESPOSTAS ABERTAS — PALAVRAS DA PACIENTE', margin+4, y+5.5);
+  y += 12;
+
+  openQs.forEach((item, i) => {
+    const resp = state.open[i] || 'Não respondida.';
+    const qLines = doc.splitTextToSize(item.q, cW-8);
+    const rLines = doc.splitTextToSize(resp, cW-8);
+    const blockH = qLines.length*5 + rLines.length*5 + 14;
+    chk(blockH);
+
+    doc.setFillColor(...warm);
+    doc.roundedRect(margin, y, cW, blockH, 2, 2, 'F');
+    doc.setFillColor(...accent); doc.rect(margin, y, 2, blockH, 'F');
+
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...ink);
+    doc.text(qLines, margin+5, y+6);
+    doc.setFont('helvetica','normal'); doc.setTextColor(60,60,60);
+    doc.text(rLines, margin+5, y + qLines.length*5 + 9);
+    y += blockH + 4;
+  });
+
+  // ── NOTAS CLÍNICAS INTERPRETATIVAS ──────────────────────────────────────
+  newPage();
+  doc.setFillColor(...ink);
+  doc.rect(margin, y, cW, 8, 'F');
+  doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...white);
+  doc.text('GUIA INTERPRETATIVO — USO EXCLUSIVO DA MÉDICA', margin+4, y+5.5);
+  y += 14;
+
+  const notes = [
+    {
+      title: 'TEA FEMININO / MASCARAMENTO (domínio Social + Rotina)',
+      body: 'Escores elevados em mascaramento social (aprender regras conscientemente, "performar" personagem), esgotamento pós-social, necessidade de rotina previsível, sensibilidade sensorial e interesses intensos são marcadores centrais do TEA nível 1 em mulheres. O mascaramento crônico é fator de risco independente para burnout autístico, ansiedade e depressão. ADOS-2 / ADI-R indicados.'
+    },
+    {
+      title: 'ALTAS HABILIDADES / SUPERDOTAÇÃO (domínio Cognição)',
+      body: 'Aprendizado acelerado, pensamento não-linear, conexões inusitadas entre conceitos, tédio com rotina e questionamento de autoridade são traços cardinais. A intensidade emocional (Intensidade = Dabrowski) é frequentemente confundida com labilidade patológica. Avaliação WAIS-IV recomendada.'
+    },
+    {
+      title: 'TRIPLA EXCEPCIONALIDADE (2e / 3e)',
+      body: 'Quando AH/SD coexiste com TEA e transtorno emocional/psiquiátrico, os perfis se mascaram mutuamente: a alta inteligência compensa déficits TEA; o mascaramento TEA oculta a disfunção; o diagnóstico emocional (TPB, depressão, TAG) concentra a atenção clínica. Risco de subdiagnóstico de AH/SD e TEA. Abordagem longitudinal essencial.'
+    },
+    {
+      title: 'DIFERENCIAL TPB × TEA FEMININO MASCARADO',
+      body: 'A difusão de identidade, medo de abandono e instabilidade relacional ocorrem em ambos — mas no TEA a instabilidade emocional é reativa a sobrecarga sensorial/social e dissonância de expectativas, não ao padrão interpessoal crônico do TPB. Histórico de trauma precoce é fator de confusão adicional. Investigar com entrevista clínica longitudinal e escalas específicas (AQ-10, RAADS-R, MSI-BPD).'
+    },
+    {
+      title: 'BURNOUT AUTÍSTICO',
+      body: 'Apresentação de esgotamento profundo após anos de mascaramento, com colapso de capacidades adaptativas que antes funcionavam. Quadro comum em mulheres com TEA mascarado diagnosticado tardiamente. Diferencial importante com depressão major: no burnout autístico a recuperação requer redução de demanda social/sensorial, não apenas farmacoterapia.'
+    },
+  ];
+
+  notes.forEach(n => {
+    const titleLines = doc.splitTextToSize(n.title, cW-8);
+    const bodyLines = doc.splitTextToSize(n.body, cW-8);
+    const bH = titleLines.length*5 + bodyLines.length*5 + 14;
+    chk(bH);
+
+    doc.setFillColor(255,255,255);
+    doc.roundedRect(margin, y, cW, bH, 2,2,'F');
+    doc.setDrawColor(...mist); doc.roundedRect(margin, y, cW, bH, 2,2,'S');
+    doc.setFillColor(...accent); doc.rect(margin, y, 3, bH, 'F');
+
+    doc.setFontSize(8); doc.setFont('helvetica','bold'); doc.setTextColor(...ink);
+    doc.text(titleLines, margin+6, y+6);
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(60,60,60);
+    doc.text(bodyLines, margin+6, y + titleLines.length*5 + 8);
+    y += bH + 6;
+  });
+
+  // ── FOOTER em todas as páginas ───────────────────────────────────────────
+  const total = doc.getNumberOfPages();
+  for (let p = 1; p <= total; p++) {
+    doc.setPage(p);
+    doc.setFontSize(7); doc.setFont('helvetica','normal'); doc.setTextColor(180,180,180);
+    doc.text(`Alana Guimarães Gregorut · Rastreio AH/2e · Dra. Camila Lino CRM 274280 SP · Pág. ${p}/${total}`, W/2, 293, {align:'center'});
+  }
+
+  doc.save('Rastreio_ALANA_AH_2e_' + new Date().toLocaleDateString('pt-BR').replace(/\//g,'-') + '.pdf');
+}
+</script>
+</body>
+</html>
